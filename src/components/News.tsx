@@ -1,29 +1,28 @@
+import { useEffect, useState } from 'react';
 import { Calendar, ArrowRight, BookOpen } from 'lucide-react';
+import { supabase } from '../lib/supabase';
+import type { Database } from '../lib/database.types';
+
+type BlogPost = Database['public']['Tables']['blog_posts']['Row'];
 
 export default function News() {
-  const articles = [
-    {
-      title: 'The Future of Digital Health in Resource-Limited Settings',
-      excerpt: 'Exploring how mobile technology and innovative design are bridging healthcare gaps in underserved communities.',
-      date: 'March 15, 2024',
-      category: 'Digital Health',
-      readTime: '5 min read',
-    },
-    {
-      title: 'Improving Immunization Data Quality Through Technology',
-      excerpt: 'How RI-DATACAP is transforming routine immunization monitoring and helping health teams make data-driven decisions.',
-      date: 'March 8, 2024',
-      category: 'Innovation',
-      readTime: '7 min read',
-    },
-    {
-      title: 'From Research to Reality: Our Approach to Health Innovation',
-      excerpt: 'Understanding the Implexa methodology for translating evidence-based research into scalable healthcare solutions.',
-      date: 'February 28, 2024',
-      category: 'Research',
-      readTime: '6 min read',
-    },
-  ];
+  const [articles, setArticles] = useState<BlogPost[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    loadArticles();
+  }, []);
+
+  const loadArticles = async () => {
+    const { data } = await supabase
+      .from('blog_posts')
+      .select('*')
+      .eq('published', true)
+      .order('created_at', { ascending: false })
+      .limit(3);
+    setArticles(data || []);
+    setLoading(false);
+  };
 
   return (
     <section id="news" className="py-20 lg:py-32 bg-gray-50 relative overflow-hidden">
@@ -38,47 +37,77 @@ export default function News() {
           </p>
         </div>
 
-        <div className="grid md:grid-cols-3 gap-8 mb-12">
-          {articles.map((article, index) => (
-            <article
-              key={index}
-              className="bg-white rounded-2xl border border-gray-200 hover:border-[#6EBF78] transition-all duration-300 overflow-hidden group hover:transform hover:scale-105 shadow-sm hover:shadow-md"
-            >
-              <div className="h-48 bg-gradient-to-br from-[#6EBF78]/20 to-[#4A9D5F]/10 flex items-center justify-center">
-                <BookOpen className="text-[#6EBF78] opacity-50" size={64} />
-              </div>
-
-              <div className="p-6">
-                <div className="flex items-center gap-2 mb-4">
-                  <span className="px-3 py-1 bg-[#6EBF78]/20 text-[#6EBF78] text-xs font-semibold rounded-full">
-                    {article.category}
-                  </span>
-                  <span className="text-gray-500 text-xs">{article.readTime}</span>
-                </div>
-
-                <h3 className="text-xl font-bold text-gray-900 mb-3 group-hover:text-[#6EBF78] transition-colors">
-                  {article.title}
-                </h3>
-
-                <p className="text-gray-600 mb-4 text-sm leading-relaxed">{article.excerpt}</p>
-
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-2 text-gray-500 text-sm">
-                    <Calendar size={14} />
-                    <span>{article.date}</span>
+        {loading ? (
+          <div className="text-center py-12">
+            <p className="text-gray-600">Loading articles...</p>
+          </div>
+        ) : articles.length === 0 ? (
+          <div className="text-center py-12">
+            <BookOpen className="mx-auto text-gray-400 mb-4" size={48} />
+            <p className="text-gray-600">No articles published yet</p>
+          </div>
+        ) : (
+          <div className="grid md:grid-cols-3 gap-8 mb-12">
+            {articles.map((article) => (
+              <article
+                key={article.id}
+                className="bg-white rounded-2xl border border-gray-200 hover:border-[#6EBF78] transition-all duration-300 overflow-hidden group hover:transform hover:scale-105 shadow-sm hover:shadow-md"
+              >
+                {article.image_url ? (
+                  <div
+                    className="h-48 bg-cover bg-center"
+                    style={{ backgroundImage: `url(${article.image_url})` }}
+                  />
+                ) : (
+                  <div className="h-48 bg-gradient-to-br from-[#6EBF78]/20 to-[#4A9D5F]/10 flex items-center justify-center">
+                    <BookOpen className="text-[#6EBF78] opacity-50" size={64} />
                   </div>
-                  <button className="text-[#6EBF78] font-semibold text-sm flex items-center gap-1 hover:gap-2 transition-all">
-                    Read More
-                    <ArrowRight size={16} />
-                  </button>
+                )}
+
+                <div className="p-6">
+                  <div className="flex items-center gap-2 mb-4">
+                    <span className="px-3 py-1 bg-[#6EBF78]/20 text-[#6EBF78] text-xs font-semibold rounded-full">
+                      {article.category}
+                    </span>
+                    <span className="text-gray-500 text-xs">{article.read_time}</span>
+                  </div>
+
+                  <h3 className="text-xl font-bold text-gray-900 mb-3 group-hover:text-[#6EBF78] transition-colors">
+                    {article.title}
+                  </h3>
+
+                  <p className="text-gray-600 mb-4 text-sm leading-relaxed">{article.excerpt}</p>
+
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-2 text-gray-500 text-sm">
+                      <Calendar size={14} />
+                      <span>{new Date(article.created_at).toLocaleDateString()}</span>
+                    </div>
+                    <button
+                      onClick={() => {
+                        window.history.pushState({}, '', `/post/${article.id}`);
+                        window.dispatchEvent(new PopStateEvent('popstate'));
+                      }}
+                      className="text-[#6EBF78] font-semibold text-sm flex items-center gap-1 hover:gap-2 transition-all"
+                    >
+                      Read More
+                      <ArrowRight size={16} />
+                    </button>
+                  </div>
                 </div>
-              </div>
-            </article>
-          ))}
-        </div>
+              </article>
+            ))}
+          </div>
+        )}
 
         <div className="text-center">
-          <button className="px-8 py-4 bg-gray-100 hover:bg-gray-200 text-gray-900 font-semibold rounded-lg transition-all duration-300 border border-gray-300">
+          <button
+            onClick={() => {
+              window.history.pushState({}, '', '/blog');
+              window.dispatchEvent(new PopStateEvent('popstate'));
+            }}
+            className="px-8 py-4 bg-gray-100 hover:bg-gray-200 text-gray-900 font-semibold rounded-lg transition-all duration-300 border border-gray-300"
+          >
             View All Insights
           </button>
         </div>

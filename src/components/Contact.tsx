@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { Mail, Send, CheckCircle } from 'lucide-react';
+import { supabase } from '../lib/supabase';
 
 export default function Contact() {
   const [formData, setFormData] = useState({
@@ -8,14 +9,29 @@ export default function Contact() {
     message: '',
   });
   const [submitted, setSubmitted] = useState(false);
+  const [submitting, setSubmitting] = useState(false);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setSubmitted(true);
-    setTimeout(() => {
-      setSubmitted(false);
-      setFormData({ name: '', email: '', message: '' });
-    }, 3000);
+    setSubmitting(true);
+
+    const { error } = await supabase.from('contact_messages').insert([
+      {
+        name: formData.name,
+        email: formData.email,
+        message: formData.message,
+      },
+    ]);
+
+    setSubmitting(false);
+
+    if (!error) {
+      setSubmitted(true);
+      setTimeout(() => {
+        setSubmitted(false);
+        setFormData({ name: '', email: '', message: '' });
+      }, 3000);
+    }
   };
 
   return (
@@ -133,10 +149,11 @@ export default function Contact() {
 
                   <button
                     type="submit"
-                    className="w-full py-4 bg-[#6EBF78] hover:bg-[#5DAF68] text-white font-semibold rounded-lg transition-all duration-300 flex items-center justify-center gap-2 shadow-lg shadow-[#6EBF78]/30"
+                    disabled={submitting}
+                    className="w-full py-4 bg-[#6EBF78] hover:bg-[#5DAF68] disabled:bg-gray-400 disabled:cursor-not-allowed text-white font-semibold rounded-lg transition-all duration-300 flex items-center justify-center gap-2 shadow-lg shadow-[#6EBF78]/30"
                   >
                     <Send size={20} />
-                    Send Message
+                    {submitting ? 'Sending...' : 'Send Message'}
                   </button>
                 </>
               )}

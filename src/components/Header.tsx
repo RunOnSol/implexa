@@ -39,7 +39,7 @@ export default function Header() {
   return (
     <header
       className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${
-        isScrolled ? "bg-white/95 backdrop-blur-md shadow-lg" : "bg-transparent"
+        isScrolled ? "bg-gray-900/95 backdrop-blur-md shadow-lg" : "bg-gray-900/80"
       }`}
     >
       <nav className="container mx-auto px-4 lg:px-8 ">
@@ -50,7 +50,7 @@ export default function Header() {
               className="w-8 h-10 lg:w-10 lg:h-10 rounded-full flex items-center justify-center"
               alt="I"
             />
-            <span className="text-gray-900 font-bold text-xl lg:text-2xl">
+            <span className="text-white font-bold text-xl lg:text-2xl">
               IMPLEXA
             </span>
           </div>
@@ -60,7 +60,7 @@ export default function Header() {
               <button
                 key={link.name}
                 onClick={() => handleNavClick(link.href)}
-                className="text-gray-700 hover:text-[#6EBF78] transition-colors duration-200 font-medium"
+                className="text-gray-300 hover:text-[#6EBF78] transition-colors duration-200 font-medium"
               >
                 {link.name}
               </button>
@@ -69,7 +69,7 @@ export default function Header() {
 
           <button
             onClick={() => setIsMenuOpen(!isMenuOpen)}
-            className="lg:hidden text-gray-900 p-2 hover:bg-gray-100 rounded-lg transition-colors"
+            className="lg:hidden text-white p-2 hover:bg-gray-800 rounded-lg transition-colors"
             aria-label="Toggle menu"
           >
             {isMenuOpen ? <X size={24} /> : <Menu size={24} />}
@@ -82,13 +82,13 @@ export default function Header() {
           isMenuOpen ? "max-h-96 opacity-100" : "max-h-0 opacity-0"
         }`}
       >
-        <div className="bg-white/98 backdrop-blur-md border-t border-gray-200">
+        <div className="bg-gray-900/98 backdrop-blur-md border-t border-gray-700">
           <div className="container mx-auto px-4 py-4">
             {navLinks.map((link) => (
               <button
                 key={link.name}
                 onClick={() => handleNavClick(link.href)}
-                className="block w-full text-left py-3 px-4 text-gray-700 hover:text-[#6EBF78] hover:bg-gray-100 rounded-lg transition-all duration-200 font-medium"
+                className="block w-full text-left py-3 px-4 text-gray-300 hover:text-[#6EBF78] hover:bg-gray-800 rounded-lg transition-all duration-200 font-medium"
               >
                 {link.name}
               </button>
